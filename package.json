@@ -1,0 +1,46 @@
+{
+  "name": "winston-express-logger",
+  "version": "0.0.0",
+  "description": "Winston express request logger middleware",
+  "homepage": "https://github.com/frnd/winston-express-logger",
+  "repository": "frnd/winston-express-logger",
+  "author": {
+    "name": "Fernando González",
+    "email": "fgo@outlook.com",
+    "url": "https://github.com/frnd"
+  },
+  "files": [
+    "lib"
+  ],
+  "main": "lib/index.js",
+  "keywords": [
+    "winston",
+    "request",
+    "logger",
+    "unique",
+    "id"
+  ],
+  "dependencies": {
+    "node-uuid": "*",
+    "useragent": "*",
+    "winston": "*",
+    "extend": "^1.2.1"
+  },
+  "devDependencies": {
+    "gulp": "^3.6.0",
+    "gulp-eslint": "^1.0.0",
+    "gulp-exclude-gitignore": "^1.0.0",
+    "gulp-istanbul": "^0.9.0",
+    "gulp-mocha": "^2.0.0",
+    "gulp-plumber": "^1.0.0",
+    "gulp-nsp": "^0.4.5",
+    "connect": "~2.12.0",
+    "supertest": "~0.9.0"
+  },
+  "scripts": {
+    "prepublish": "gulp prepublish",
+    "test": "gulp"
+  },
+  "license": "MIT",
+  "private": true
+}
