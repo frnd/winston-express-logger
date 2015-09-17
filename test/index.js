@@ -80,4 +80,24 @@ describe('winston-express-logger', function() {
     // TODO
     done();
   });
+
+  it('should log with a message', function(done) {
+    // TODO
+    done();
+  });
+
+  it('should log with a parametrized message', function(done) {
+    // TODO
+    done();
+  });
+
+  it('should log with a parametrized message and a callback', function(done) {
+    // TODO
+    done();
+  });
+
+  it('should log with a message without parameters and a callback', function(done) {
+    // TODO
+    done();
+  });
 });
