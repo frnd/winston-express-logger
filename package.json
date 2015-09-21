@@ -24,7 +24,7 @@
     "node-uuid": "*",
     "useragent": "*",
     "winston": "*",
-    "extend": "^1.2.1"
+    "extend": "*"
   },
   "devDependencies": {
     "gulp": "^3.6.0",
