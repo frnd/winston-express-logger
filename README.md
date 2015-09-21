@@ -1,13 +1,18 @@
-# winston-express-logger 
+# winston-express-logger
 > Winston express request logger middleware
 
+HTTP request logger middleware for Express using winston.
+
+Creates a logger in the request that will add an ID to each logs to be able to trace
+all log messages that comes from the same request.
 
 ## Install
 
-```sh
-$ npm install --save winston-express-logger
-```
+Note: this module is not published on npm so you have to use the github url.
 
+```sh
+$ npm install --save https://github.com/frnd/winston-express-logger.git
+```
 
 ## Usage
 
