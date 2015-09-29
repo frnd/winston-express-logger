@@ -49,7 +49,7 @@ describe('winston-express-logger', function() {
     TestTransport.prototype.log = function(level, msg, meta, callback) {
       assert.equal(msg, 'End request', 'Incorrect message');
       assert.equal(meta.method, 'GET', 'Incorrect method');
-      assert.equal(meta.url.path, '/index.js', 'Incorrect path');
+      assert.equal(meta.url, '/index.js', 'Incorrect path');
       assert(meta.requestId, 'No request Id');
       callback(null);
       done(null);
@@ -68,7 +68,7 @@ describe('winston-express-logger', function() {
     request(app)
       .get(__filename.replace(__dirname, ''))
       .end(function(err) {
-        if(err) {
+        if (err) {
           done(err);
         }
       });
