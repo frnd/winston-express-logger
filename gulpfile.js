@@ -1,46 +1,29 @@
 'use strict';
 var gulp = require('gulp');
-var eslint = require('gulp-eslint');
-var excludeGitignore = require('gulp-exclude-gitignore');
+var jshint = require('gulp-jshint');
 var mocha = require('gulp-mocha');
 var istanbul = require('gulp-istanbul');
-var nsp = require('gulp-nsp');
-var plumber = require('gulp-plumber');
+var exit = require('gulp-exit');
 
-gulp.task('static', function () {
-  return gulp.src('**/*.js')
-    .pipe(excludeGitignore())
-    .pipe(eslint())
-    .pipe(eslint.format())
-    .pipe(eslint.failAfterError());
-});
-
-gulp.task('nsp', function (cb) {
-  nsp('package.json', cb);
+gulp.task('lint', function () {
+  return gulp.src(['src/*.js', 'test/*.js'])
+    .pipe(jshint())
+    .pipe(jshint.reporter('default'));
 });
 
 gulp.task('pre-test', function () {
-  return gulp.src('lib/**/*.js')
-    .pipe(istanbul({
-      includeUntested: true
-    }))
+  return gulp.src(['lib/**/*.js'])
+    // Covering files
+    .pipe(istanbul())
+    // Force `require` to return covered files
     .pipe(istanbul.hookRequire());
 });
 
-gulp.task('test', ['pre-test'], function (cb) {
-  var mochaErr;
-
-  gulp.src('test/**/*.js')
-    .pipe(plumber())
-    .pipe(mocha({reporter: 'spec'}))
-    .on('error', function (err) {
-      mochaErr = err;
-    })
+gulp.task('test', ['pre-test'], function () {
+  return gulp.src('test/*.js')
+    .pipe(mocha())
     .pipe(istanbul.writeReports())
-    .on('end', function () {
-      cb(mochaErr);
-    });
+    .pipe(exit());
 });
 
-gulp.task('prepublish', ['nsp']);
-gulp.task('default', ['static', 'test']);
+gulp.task('default', ['lint', 'test']);

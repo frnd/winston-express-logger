@@ -74,7 +74,7 @@ describe('winston-express-logger', function() {
       });
   });
 
-  it('should add use teh resolver to obtain data from teh request');
+  it('should add use the resolver to obtain data from teh request');
 
   it('should add an unique id for each request');
 

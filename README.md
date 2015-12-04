@@ -1,3 +1,4 @@
+
 # winston-express-logger
 > Winston express request logger middleware
 
@@ -37,8 +38,16 @@ exports.controller = function(req, res) {
     [...]
 }
 ```
+You can add a second parameter. A function that will be called to resolve some data to add to the logs. For example:
 
+```js
 
+var resolveData = function (req){
+  return {userId: req.userId};
+};
+
+app.use(winstonExpressLogger.create(logger, resolveData));
+```
 
 ## License
 
