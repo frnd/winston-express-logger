@@ -74,7 +74,43 @@ describe('winston-express-logger', function() {
       });
   });
 
-  it('should add use the resolver to obtain data from teh request');
+  it('should add use the resolver to obtain data from the request', function(done) {
+
+    // Complete the test in the transport
+    TestTransport.prototype.log = function(level, msg, meta, callback) {
+      assert.equal(msg, 'End request', 'Incorrect message');
+      assert.equal(meta.method, 'GET', 'Incorrect method');
+      assert.equal(meta.url, '/index.js', 'Incorrect path');
+      assert.equal(meta.userId, 'AAA', 'Problem resolving data from request.');
+      assert(meta.requestId, 'No request Id');
+      callback(null);
+      done(null);
+    };
+
+    // Bootstrap our environment
+    var app = connect();
+
+    // Imagine we have a middelware that validates a user.
+    app.use(function(req, res, next) {
+      req.userId = 'AAA';
+      next();
+    });
+
+    // Instantiate our Winston logger as middleware.
+    app.use(requestLogger.create(winston, function(req){return {userId: req.userId};}));
+
+    // Use Connect's static middleware so we can make a dummy request.
+    app.use(connect.static(__dirname));
+
+    // Make our dummy request.
+    request(app)
+      .get(__filename.replace(__dirname, ''))
+      .end(function(err) {
+        if (err) {
+          done(err);
+        }
+      });
+  });
 
   it('should add an unique id for each request');
 
