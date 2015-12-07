@@ -97,7 +97,11 @@ describe('winston-express-logger', function() {
     });
 
     // Instantiate our Winston logger as middleware.
-    app.use(requestLogger.create(winston, function(req){return {userId: req.userId};}));
+    app.use(requestLogger.create(winston, function(req) {
+      return {
+        userId: req.userId
+      };
+    }));
 
     // Use Connect's static middleware so we can make a dummy request.
     app.use(connect.static(__dirname));
@@ -112,7 +116,47 @@ describe('winston-express-logger', function() {
       });
   });
 
-  it('should add an unique id for each request');
+  it('should add an unique id for each request', function(done) {
+    var requestId;
+    // Complete the test in the transport
+    TestTransport.prototype.log = function(level, msg, meta, callback) {
+      assert(meta.requestId, 'No request Id');
+      callback(null);
+      if (!requestId) {
+        requestId = meta.requestId;
+      } else {
+        assert.notEqual(requestId, meta.requestId, 'Same requestId for 2 different reques.');
+        done(null);
+      }
+    };
+
+    // Bootstrap our environment
+    var app = connect();
+
+    // Instantiate our Winston logger as middleware.
+    app.use(requestLogger.create(winston));
+
+    // Use Connect's static middleware so we can make a dummy request.
+    app.use(connect.static(__dirname));
+
+    // Make our 2 dummy request.
+    request(app)
+      .get(__filename.replace(__dirname, ''))
+      .end(function(err) {
+        if (err) {
+          done(err);
+        }
+      });
+    request(app)
+      .get(__filename.replace(__dirname, ''))
+      .end(function(err) {
+        if (err) {
+          done(err);
+        }
+      });
+  });
+
+  // Test logger on the request.
 
   it('should log with a non parametrized message');
 
@@ -123,6 +167,8 @@ describe('winston-express-logger', function() {
   it('should log with a parametrized message, metadata and a callback');
 
   it('should log with a non parametrized message and a callback');
+
+  // Test additional utility methods.
 
   it('should profle');
 
