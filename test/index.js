@@ -16,10 +16,10 @@ TestTransport.prototype.log = function(level, msg, meta, done) {
   done(null);
 };
 
-winston.add(TestTransport);
 winston.remove(winston.transports.Console);
 
 describe('winston-express-logger', function() {
+
   it('should create a logger in the request', function(done) {
 
     // Bootstrap our environment
@@ -46,7 +46,11 @@ describe('winston-express-logger', function() {
   it('should log the request', function(done) {
 
     // Complete the test in the transport
-    TestTransport.prototype.log = function(level, msg, meta, callback) {
+    var CurrentTestTransport = function() {};
+    util.inherits(CurrentTestTransport, TestTransport);
+    winston.clear();
+    winston.add(CurrentTestTransport);
+    CurrentTestTransport.prototype.log = function(level, msg, meta, callback) {
       assert.equal(msg, 'End request', 'Incorrect message');
       assert.equal(meta.method, 'GET', 'Incorrect method');
       assert.equal(meta.url, '/index.js', 'Incorrect path');
@@ -77,7 +81,11 @@ describe('winston-express-logger', function() {
   it('should add use the resolver to obtain data from the request', function(done) {
 
     // Complete the test in the transport
-    TestTransport.prototype.log = function(level, msg, meta, callback) {
+    var CurrentTestTransport = function() {};
+    util.inherits(CurrentTestTransport, TestTransport);
+    winston.clear();
+    winston.add(CurrentTestTransport);
+    CurrentTestTransport.prototype.log = function(level, msg, meta, callback) {
       assert.equal(msg, 'End request', 'Incorrect message');
       assert.equal(meta.method, 'GET', 'Incorrect method');
       assert.equal(meta.url, '/index.js', 'Incorrect path');
@@ -119,7 +127,11 @@ describe('winston-express-logger', function() {
   it('should add an unique id for each request', function(done) {
     var requestId;
     // Complete the test in the transport
-    TestTransport.prototype.log = function(level, msg, meta, callback) {
+    var CurrentTestTransport = function() {};
+    util.inherits(CurrentTestTransport, TestTransport);
+    winston.clear();
+    winston.add(CurrentTestTransport);
+    CurrentTestTransport.prototype.log = function(level, msg, meta, callback) {
       assert(meta.requestId, 'No request Id');
       callback(null);
       if (!requestId) {
@@ -156,9 +168,112 @@ describe('winston-express-logger', function() {
       });
   });
 
+  it('should group all logs from same request using request Id', function(done) {
+    var lastRequestId;
+    var count = 0;
+    // Complete the test in the transport
+    var CurrentTestTransport = function() {};
+    util.inherits(CurrentTestTransport, TestTransport);
+    winston.clear();
+    winston.add(CurrentTestTransport);
+    CurrentTestTransport.prototype.log = function(level, msg, meta, callback) {
+      assert(meta.requestId, 'No request Id');
+      assert.equal(lastRequestId || meta.requestId, meta.requestId, 'Diferent request Id');
+      lastRequestId = meta.requestId;
+      callback(null);
+      count++;
+      if (count === 6) {
+        // 6 calls to logger.
+        done(null);
+      }
+    };
+
+    // Bootstrap our environment
+    var app = connect();
+
+    // Instantiate our Winston logger as middleware.
+    app.use(requestLogger.create(winston));
+
+    // Add a middelware that will log using the logger in the request.
+    app.use(function(req, res, next) {
+      req.logger.info('First middleware: ONE');
+      req.logger.info('First middleware: TWO');
+      req.logger.info('First middleware: THREE');
+      next();
+    });
+
+    // Add a middelware that will log using the logger in the request.
+    app.use(function(req, res, next) {
+      req.logger.info('Second middleware: ONE');
+      req.logger.info('Second middleware: TWO');
+      req.logger.info('Second middleware: THREE');
+      next();
+    });
+
+    // Use Connect's static middleware so we can make a dummy request.
+    app.use(connect.static(__dirname));
+
+    // Make our dummy request.
+    request(app)
+      .get(__filename.replace(__dirname, ''))
+      .end(function(err) {
+        if (err) {
+          done(err);
+        }
+      });
+  });
+
   // Test logger on the request.
 
-  it('should log with a non parametrized message');
+  it('should log with a non parametrized message', function(done) {
+    var count = 0;
+    // Complete the test in the transport
+    var CurrentTestTransport = function() {};
+    util.inherits(CurrentTestTransport, TestTransport);
+    winston.clear();
+    winston.add(CurrentTestTransport);
+    CurrentTestTransport.prototype.log = function(level, msg, meta, callback) {
+      if (count === 0) {
+        assert.equal(msg, 'End request', 'Incorrect message');
+        assert.equal(meta.method, 'GET', 'Incorrect method');
+        assert.equal(meta.url, '/index.js', 'Incorrect path');
+        assert(meta.requestId, 'No request Id');
+        callback(null);
+        count++;
+      } else {
+        assert.equal(msg, 'Doing something', 'Incorrect message');
+        assert.equal(meta.method, 'GET', 'Incorrect method');
+        assert.equal(meta.url, '/index.js', 'Incorrect path');
+        assert(meta.requestId, 'No request Id');
+        callback(null);
+        done(null);
+      }
+    };
+
+    // Bootstrap our environment
+    var app = connect();
+
+    // Instantiate our Winston logger as middleware.
+    app.use(requestLogger.create(winston));
+
+    // Add a middelware that will log using the logger in the request.
+    app.use(function(req, res, next) {
+      req.logger.info('Doing something');
+      next();
+    });
+
+    // Use Connect's static middleware so we can make a dummy request.
+    app.use(connect.static(__dirname));
+
+    // Make our dummy request.
+    request(app)
+      .get(__filename.replace(__dirname, ''))
+      .end(function(err) {
+        if (err) {
+          done(err);
+        }
+      });
+  });
 
   it('should log with a parametrized message');
 
