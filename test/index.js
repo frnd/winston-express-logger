@@ -182,7 +182,7 @@ describe('winston-express-logger', function() {
       lastRequestId = meta.requestId;
       callback(null);
       count++;
-      if (count === 6) {
+      if (count === 7) {
         // 6 calls to logger.
         done(null);
       }
@@ -196,17 +196,16 @@ describe('winston-express-logger', function() {
 
     // Add a middelware that will log using the logger in the request.
     app.use(function(req, res, next) {
-      req.logger.info('First middleware: ONE');
-      req.logger.info('First middleware: TWO');
-      req.logger.info('First middleware: THREE');
+      req.logger.info('ONE');
+      req.logger.info('TWO');
+      req.logger.info('THREE');
       next();
     });
 
-    // Add a middelware that will log using the logger in the request.
     app.use(function(req, res, next) {
-      req.logger.info('Second middleware: ONE');
-      req.logger.info('Second middleware: TWO');
-      req.logger.info('Second middleware: THREE');
+      req.logger.info('ONE');
+      req.logger.info('TWO');
+      req.logger.info('THREE');
       next();
     });
 
@@ -224,8 +223,7 @@ describe('winston-express-logger', function() {
   });
 
   // Test logger on the request.
-
-  it('should log with a non parametrized message', function(done) {
+  it('should log without string interpolation', function(done) {
     var count = 0;
     // Complete the test in the transport
     var CurrentTestTransport = function() {};
@@ -234,14 +232,14 @@ describe('winston-express-logger', function() {
     winston.add(CurrentTestTransport);
     CurrentTestTransport.prototype.log = function(level, msg, meta, callback) {
       if (count === 0) {
-        assert.equal(msg, 'End request', 'Incorrect message');
+        assert.equal(msg, 'Doing something', 'Incorrect message');
         assert.equal(meta.method, 'GET', 'Incorrect method');
         assert.equal(meta.url, '/index.js', 'Incorrect path');
         assert(meta.requestId, 'No request Id');
         callback(null);
         count++;
       } else {
-        assert.equal(msg, 'Doing something', 'Incorrect message');
+        assert.equal(msg, 'End request', 'Incorrect message');
         assert.equal(meta.method, 'GET', 'Incorrect method');
         assert.equal(meta.url, '/index.js', 'Incorrect path');
         assert(meta.requestId, 'No request Id');
@@ -275,7 +273,55 @@ describe('winston-express-logger', function() {
       });
   });
 
-  it('should log with a parametrized message');
+  it('should log with string interpolation', function(done) {
+    var count = 0;
+    // Complete the test in the transport
+    var CurrentTestTransport = function() {};
+    util.inherits(CurrentTestTransport, TestTransport);
+    winston.clear();
+    winston.add(CurrentTestTransport);
+    CurrentTestTransport.prototype.log = function(level, msg, meta, callback) {
+      if (count === 0) {
+        assert.equal(msg, 'Doing something 123', 'Incorrect message');
+        assert.equal(meta.method, 'GET', 'Incorrect method');
+        assert.equal(meta.url, '/index.js', 'Incorrect path');
+        assert(meta.requestId, 'No request Id');
+        callback(null);
+        count++;
+      } else {
+        assert.equal(msg, 'End request', 'Incorrect message');
+        assert.equal(meta.method, 'GET', 'Incorrect method');
+        assert.equal(meta.url, '/index.js', 'Incorrect path');
+        assert(meta.requestId, 'No request Id');
+        callback(null);
+        done(null);
+      }
+    };
+
+    // Bootstrap our environment
+    var app = connect();
+
+    // Instantiate our Winston logger as middleware.
+    app.use(requestLogger.create(winston));
+
+    // Add a middelware that will log using the logger in the request.
+    app.use(function(req, res, next) {
+      req.logger.info('Doing something %d', 123);
+      return next();
+    });
+
+    // Use Connect's static middleware so we can make a dummy request.
+    app.use(connect.static(__dirname));
+
+    // Make our dummy request.
+    request(app)
+      .get(__filename.replace(__dirname, ''))
+      .end(function(err) {
+        if (err) {
+          done(err);
+        }
+      });
+  });
 
   it('should log with a parametrized message and metadata');
 
@@ -288,4 +334,5 @@ describe('winston-express-logger', function() {
   it('should profle');
 
   it('should startTimeout');
+
 });
