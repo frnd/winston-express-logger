@@ -1,3 +1,4 @@
+IPORTANT: This project will be no longer maintained. If you need this functionality, please use https://github.com/frnd/express-winston, a fork of a more mature project where I added the UUID stuff. This notice will be removed when the pull request is accepted.
 
 # winston-express-logger
 > Winston express request logger middleware
